@@ -1,0 +1,20 @@
+{
+  "name": "anythingllm-chatbot",
+  "version": "1.0.0",
+  "description": "A chatbot using AnythingLLM",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "dependencies": {
+    "anythingllm-chatbot": "file:",
+    "axios": "^1.6.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

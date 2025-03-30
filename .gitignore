@@ -1,0 +1,6 @@
+.env
+.env.anythingllm
+node_modules
+ollama/
+storage/
+weaviate_data/
