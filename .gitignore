@@ -4,3 +4,4 @@ node_modules
 ollama/
 storage/
 weaviate_data/
+anythingllm/

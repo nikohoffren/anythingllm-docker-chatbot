@@ -94,6 +94,7 @@ After the initial setup, your workflow will be:
   - `ollama/`: Contains downloaded model files
   - `storage/`: Contains AnythingLLM's local storage
   - `weaviate_data/`: Contains Weaviate's vector database data
+  - `anythingllm/`: Contains AnythingLLM's configuration and settings
 
 ## Troubleshooting
 
