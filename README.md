@@ -1,6 +1,14 @@
 # Dockerized AnythingLLM Chatbot with Weaviate
 
-A simple chatbot application using AnythingLLM, Ollama (llama2), and Weaviate for vector storage.
+A simple chatbot application using AnythingLLM, Ollama (llama2), and Weaviate for vector storage. The application features a room-based chat system where users can create and manage multiple chat rooms.
+
+## Features
+
+- Multiple chat rooms support
+- Persistent chat history per room
+- Clean and intuitive user interface
+- Real-time chat with AI assistant
+- Local storage for room and message persistence
 
 ## Prerequisites
 
@@ -53,6 +61,28 @@ A simple chatbot application using AnythingLLM, Ollama (llama2), and Weaviate fo
    - Open http://localhost:3002 in your browser
    - Start chatting!
 
+## Using the Application
+
+### Room Management
+
+1. Creating a Room:
+
+   - Enter a room name in the input field
+   - Click "Create Room" or press Enter
+   - You'll be automatically taken to the new chat room
+
+2. Switching Rooms:
+
+   - Click on any room in the room list to switch to it
+   - Use the "Back to Rooms" button to return to the room selection screen
+   - Each room maintains its own chat history
+
+3. Chat Features:
+   - Type your message and press Enter or click Send
+   - Messages are saved automatically
+   - Chat history persists across page reloads
+   - Each room has its own independent conversation
+
 ## Regular Usage
 
 After the initial setup, your workflow will be:
@@ -95,6 +125,7 @@ After the initial setup, your workflow will be:
   - `storage/`: Contains AnythingLLM's local storage
   - `weaviate_data/`: Contains Weaviate's vector database data
   - `anythingllm/`: Contains AnythingLLM's configuration and settings
+  - Browser's localStorage: Contains chat rooms and messages
 
 ## Troubleshooting
 
@@ -115,3 +146,8 @@ If you encounter any issues:
 3. Ensure all environment variables are correctly set in your `.env` and `.env.anythingllm` files
 
 4. Make sure ports 3001, 3002, and 8080 are available on your system
+
+5. If you experience issues with rooms or messages:
+   - Clear your browser's localStorage
+   - Refresh the page
+   - Create new rooms as needed

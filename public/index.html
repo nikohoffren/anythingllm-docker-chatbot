@@ -12,33 +12,139 @@
         <h1>AnythingLLM Chatbot</h1>
         <p>Ask me anything!</p>
       </div>
-      <div class="chat-container">
-        <div class="chat-messages" id="chat-messages">
-          <div class="message bot-message">
-            Hello! I'm your AI assistant. How can I help you today?
+
+      <!-- Room Selection View -->
+      <div class="view" id="room-selection-view">
+        <div class="room-selection-container">
+          <h2>Select or Create a Room</h2>
+          <div class="room-list" id="room-list">
+            <div class="room-items"></div>
+          </div>
+          <div class="room-actions">
+            <input
+              type="text"
+              class="input-field"
+              id="room-name-input"
+              placeholder="Enter room name..."
+            />
+            <button class="send-button" id="create-room-button">
+              Create Room
+            </button>
           </div>
         </div>
-        <div class="input-container">
-          <input
-            type="text"
-            class="input-field"
-            id="message-input"
-            placeholder="Type your message..."
-            autocomplete="off"
-          />
-          <button class="send-button" id="send-button">Send</button>
-        </div>
       </div>
-      <div class="error-message" id="error-message"></div>
+
+      <!-- Chat Room View -->
+      <div class="view hidden" id="chat-view">
+        <div class="chat-container">
+          <div class="chat-header">
+            <button class="back-button" id="back-button">
+              ← Back to Rooms
+            </button>
+            <h2 id="current-room-name"></h2>
+          </div>
+          <div class="chat-messages" id="chat-messages">
+            <div class="message bot-message">
+              Hello! I'm your AI assistant. How can I help you today?
+            </div>
+          </div>
+          <div class="input-container">
+            <input
+              type="text"
+              class="input-field"
+              id="message-input"
+              placeholder="Type your message..."
+              autocomplete="off"
+            />
+            <button class="send-button" id="send-button">Send</button>
+          </div>
+        </div>
+        <div class="error-message" id="error-message"></div>
+      </div>
     </div>
 
     <script>
+      // Room management
+      const roomNameInput = document.getElementById("room-name-input");
+      const createRoomButton = document.getElementById("create-room-button");
+      const roomList = document.querySelector(".room-items");
+      const currentRoomName = document.getElementById("current-room-name");
       const messageInput = document.getElementById("message-input");
       const sendButton = document.getElementById("send-button");
       const chatMessages = document.getElementById("chat-messages");
       const errorMessage = document.getElementById("error-message");
+      const roomSelectionView = document.getElementById("room-selection-view");
+      const chatView = document.getElementById("chat-view");
+      const backButton = document.getElementById("back-button");
 
-      function addMessage(message, isUser = false) {
+      let currentRoom = null;
+      let rooms = JSON.parse(localStorage.getItem("rooms") || "[]");
+
+      function saveRooms() {
+        localStorage.setItem("rooms", JSON.stringify(rooms));
+      }
+
+      function createRoom(name) {
+        if (!name.trim()) return;
+
+        const room = {
+          id: Date.now().toString(),
+          name: name.trim(),
+          messages: [],
+        };
+
+        rooms.push(room);
+        saveRooms();
+        updateRoomList();
+        switchRoom(room);
+      }
+
+      function updateRoomList() {
+        roomList.innerHTML = "";
+        rooms.forEach((room) => {
+          const roomElement = document.createElement("div");
+          roomElement.className = "room-item";
+          roomElement.textContent = room.name;
+          roomElement.addEventListener("click", () => switchRoom(room));
+          roomList.appendChild(roomElement);
+        });
+      }
+
+      function switchRoom(room) {
+        currentRoom = room;
+        currentRoomName.textContent = room.name;
+
+        // Clear existing messages first
+        chatMessages.innerHTML = "";
+
+        // Add messages from the room
+        if (room.messages.length > 0) {
+          room.messages.forEach((msg) => {
+            addMessage(msg.text, msg.isUser, false); // Don't save when displaying existing messages
+          });
+        } else {
+          // Only add welcome message if the room is completely empty
+          addMessage(
+            "Hello! I'm your AI assistant. How can I help you today?",
+            false,
+            true
+          );
+        }
+
+        showChatView();
+      }
+
+      function showRoomSelectionView() {
+        roomSelectionView.classList.remove("hidden");
+        chatView.classList.add("hidden");
+      }
+
+      function showChatView() {
+        roomSelectionView.classList.add("hidden");
+        chatView.classList.remove("hidden");
+      }
+
+      function addMessage(message, isUser = false, shouldSave = true) {
         const messageDiv = document.createElement("div");
         messageDiv.className = `message ${
           isUser ? "user-message" : "bot-message"
@@ -46,6 +152,11 @@
         messageDiv.textContent = message;
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        if (currentRoom && shouldSave) {
+          currentRoom.messages.push({ text: message, isUser });
+          saveRooms();
+        }
       }
 
       function addLoadingMessage() {
@@ -66,15 +177,12 @@
         return messageDiv;
       }
 
-      function addErrorMessage(message) {
-        const messageDiv = document.createElement("div");
-        messageDiv.className = "message bot-message";
-        messageDiv.innerHTML = `<div class="error-message">${message}</div>`;
-        chatMessages.appendChild(messageDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-      }
-
       async function sendMessage() {
+        if (!currentRoom) {
+          errorMessage.textContent = "Please select or create a room first";
+          return;
+        }
+
         const message = messageInput.value.trim();
         if (!message) return;
 
@@ -89,20 +197,7 @@
         addMessage(message, true);
 
         // Show thinking message with loading dots
-        const thinkingDiv = document.createElement("div");
-        thinkingDiv.className = "message bot-message";
-        thinkingDiv.innerHTML = `
-          <div class="loading">
-            Thinking
-            <div class="loading-dots">
-              <div class="loading-dot"></div>
-              <div class="loading-dot"></div>
-              <div class="loading-dot"></div>
-            </div>
-          </div>
-        `;
-        chatMessages.appendChild(thinkingDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        const thinkingDiv = addLoadingMessage();
 
         try {
           const response = await fetch("/api/chat", {
@@ -138,6 +233,20 @@
       }
 
       // Event listeners
+      createRoomButton.addEventListener("click", () => {
+        createRoom(roomNameInput.value);
+        roomNameInput.value = "";
+      });
+
+      roomNameInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          createRoom(roomNameInput.value);
+          roomNameInput.value = "";
+        }
+      });
+
+      backButton.addEventListener("click", showRoomSelectionView);
+
       sendButton.addEventListener("click", sendMessage);
       messageInput.addEventListener("keypress", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -146,8 +255,11 @@
         }
       });
 
+      // Initialize room list
+      updateRoomList();
+
       // Focus input on page load
-      messageInput.focus();
+      roomNameInput.focus();
     </script>
   </body>
 </html>
