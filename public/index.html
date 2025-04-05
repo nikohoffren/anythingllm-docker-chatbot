@@ -80,6 +80,38 @@
       let currentRoom = null;
       let rooms = JSON.parse(localStorage.getItem("rooms") || "[]");
 
+      // URL handling functions
+      function getRoomFromUrl() {
+        const path = window.location.pathname;
+        if (path === "/") return null;
+        const roomName = decodeURIComponent(path.substring(1));
+        return rooms.find((room) => room.name === roomName);
+      }
+
+      function updateUrl(room) {
+        if (room) {
+          window.history.pushState(
+            { roomId: room.id },
+            "",
+            `/${encodeURIComponent(room.name)}`
+          );
+        } else {
+          window.history.pushState(null, "", "/");
+        }
+      }
+
+      // Handle browser back/forward buttons
+      window.addEventListener("popstate", (event) => {
+        const room = event.state
+          ? rooms.find((r) => r.id === event.state.roomId)
+          : null;
+        if (room) {
+          switchRoom(room);
+        } else {
+          showRoomSelectionView();
+        }
+      });
+
       function saveRooms() {
         localStorage.setItem("rooms", JSON.stringify(rooms));
       }
@@ -132,16 +164,20 @@
         }
 
         showChatView();
+        updateUrl(room);
       }
 
       function showRoomSelectionView() {
         roomSelectionView.classList.remove("hidden");
         chatView.classList.add("hidden");
+        document.querySelector(".header").style.display = "block";
+        updateUrl(null);
       }
 
       function showChatView() {
         roomSelectionView.classList.add("hidden");
         chatView.classList.remove("hidden");
+        document.querySelector(".header").style.display = "none";
       }
 
       function addMessage(message, isUser = false, shouldSave = true) {
@@ -257,6 +293,14 @@
 
       // Initialize room list
       updateRoomList();
+
+      // Check URL on page load
+      const initialRoom = getRoomFromUrl();
+      if (initialRoom) {
+        switchRoom(initialRoom);
+      } else {
+        showRoomSelectionView();
+      }
 
       // Focus input on page load
       roomNameInput.focus();

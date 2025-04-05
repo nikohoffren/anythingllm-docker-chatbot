@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
+const path = require("path");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -10,6 +11,11 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
+
+// Serve index.html for all routes
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../public/index.html"));
+});
 
 // Chat endpoint
 app.post("/api/chat", async (req, res) => {
