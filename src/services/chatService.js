@@ -11,8 +11,7 @@ class ChatService {
       console.log(
         `[${new Date().toISOString()}] Retrieved ${
           products.length
-        } products from DynamoDB:`,
-        products.map((p) => ({ name: p.name, category: p.category }))
+        } products from DynamoDB.`,
       );
 
       // Create a context with all product information
@@ -104,7 +103,7 @@ Example for Compact Fold:
 - Stock: 3 (Black) + 3 (Silver) + 2 (Red) = 8 total units
 
 - Only provide information that exists in the inventory data above
-- Be concise and direct in your response
+- Be concise, direct, and to the point in your response
 - If the requested information is not in the inventory, simply say "I don't have that information in our inventory."
 - Double check your answer against the provided data before responding
 `;
@@ -115,16 +114,26 @@ Example for Compact Fold:
       const apiUrl = "http://localhost:11434/api/generate";
       const modelName = process.env.MODEL_NAME || "llama2";
 
-      // Debug environment variables
-      console.log(`[${new Date().toISOString()}] Environment variables:`, {
-        MODEL_NAME: process.env.MODEL_NAME,
-        allEnv: process.env,
-      });
-
       console.log(
         `[${new Date().toISOString()}] Sending request to Ollama ${modelName} at:`,
         apiUrl
       );
+
+      // Start timer for request duration
+      const startTime = Date.now();
+      const timerInterval = setInterval(() => {
+        const duration = Math.floor((Date.now() - startTime) / 1000);
+        const hours = Math.floor(duration / 3600)
+          .toString()
+          .padStart(2, "0");
+        const minutes = Math.floor((duration % 3600) / 60)
+          .toString()
+          .padStart(2, "0");
+        const seconds = (duration % 60).toString().padStart(2, "0");
+        process.stdout.write(
+          `\rRequest duration: ${hours}:${minutes}:${seconds}`
+        );
+      }, 1000);
 
       const response = await axios.post(
         apiUrl,
@@ -139,6 +148,10 @@ Example for Compact Fold:
           },
         }
       );
+
+      // Clear the timer interval after response
+      clearInterval(timerInterval);
+      process.stdout.write("\n"); // Add newline after the timer
 
       // Enhanced debug logging
       console.log(`[${new Date().toISOString()}] Ollama response:`, {
