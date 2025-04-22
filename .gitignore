@@ -5,3 +5,4 @@ ollama/
 storage/
 weaviate_data/
 anythingllm/
+transformers_cache/

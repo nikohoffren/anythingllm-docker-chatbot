@@ -32,6 +32,15 @@ services:
       AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: "true"
       PERSISTENCE_DATA_PATH: "/var/lib/weaviate"
       CLUSTER_HOSTNAME: "node1"
+      MAX_IMPORT_GOROUTINES_FACTOR: "4"
+      DEFAULT_VECTOR_CACHE_MAX_OBJECTS: "500000"
+      ENABLE_MODULES: "text2vec-transformers"
+      TRANSFORMERS_INFERENCE_API: "http://t2v-transformers:8080"
+      CACHE_SIZE: "1000000"
+      CACHE_TTL: "3600"
+      QUERY_MAXIMUM_RESULTS: "1000"
+      QUERY_DEFAULTS_VECTOR_SEARCH_LIMIT: "100"
+      MEMORY_ALLOCATION: "0.8"
     volumes:
       - ./weaviate_data:/var/lib/weaviate
     healthcheck:
@@ -47,4 +56,28 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: 8G
+        reservations:
+          cpus: "2"
+          memory: 4G
     restart: unless-stopped
+
+  t2v-transformers:
+    image: semitechnologies/transformers-inference:sentence-transformers-multi-qa-MiniLM-L6-cos-v1
+    environment:
+      ENABLE_CUDA: "0"
+      TRANSFORMERS_CACHE: "/app/cache"
+    volumes:
+      - ./transformers_cache:/app/cache
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 4G
+        reservations:
+          cpus: "1"
+          memory: 2G
