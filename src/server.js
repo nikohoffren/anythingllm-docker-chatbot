@@ -1,6 +1,5 @@
-// Load environment variables from both .env and .env.anythingllm
-require("dotenv").config(); // Loads .env first
-require("dotenv").config({ path: ".env.anythingllm" }); // Then loads .env.anythingllm, overriding any duplicates
+require("dotenv").config(); //* Loads .env first
+require("dotenv").config({ path: ".env.anythingllm" }); //* Then loads .env.anythingllm, overriding any duplicates
 const express = require("express");
 const path = require("path");
 const dynamoService = require("./database/dynamoService");
@@ -10,7 +9,7 @@ const app = express();
 app.use(express.json());
 app.use(express.static("public"));
 
-// Debug environment variables
+//* Debug environment variables
 console.log(`[${new Date().toISOString()}] Environment variables:`, {
   MODEL_NAME: process.env.MODEL_NAME,
   LLM_PROVIDER: process.env.LLM_PROVIDER,
@@ -20,14 +19,14 @@ console.log(`[${new Date().toISOString()}] Environment variables:`, {
   AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY ? "***" : undefined,
 });
 
-// Log model information
+//* Log model information
 console.log(
   `[${new Date().toISOString()}] Using model: ${
-    process.env.MODEL_NAME || "llama2"
+    process.env.MODEL_NAME || "neural-chat"
   }`
 );
 
-// Initialize DynamoDB
+//* Initialize DynamoDB
 dynamoService
   .initializeDatabase()
   .then(() => {
@@ -38,7 +37,7 @@ dynamoService
     process.exit(1);
   });
 
-// API Routes
+//* API Routes
 app.post("/api/chat", async (req, res) => {
   try {
     const { message } = req.body;
@@ -56,7 +55,7 @@ app.post("/api/chat", async (req, res) => {
   }
 });
 
-// Product search endpoint
+//* Product search endpoint
 app.get("/api/products", async (req, res) => {
   try {
     const filters = req.query;
@@ -68,7 +67,7 @@ app.get("/api/products", async (req, res) => {
   }
 });
 
-// Get product by ID endpoint
+//* Get product by ID endpoint
 app.get("/api/products/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -85,7 +84,7 @@ app.get("/api/products/:id", async (req, res) => {
   }
 });
 
-// Serve index.html for all other routes
+//* Serve index.html for all other routes
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../public/index.html"));
 });
