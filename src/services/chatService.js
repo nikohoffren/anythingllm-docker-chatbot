@@ -6,7 +6,7 @@ class ChatService {
     try {
       console.log(`[${new Date().toISOString()}] Processing query: ${message}`);
 
-      // Get all products from DynamoDB
+      //* Get all products from DynamoDB
       const products = await dynamoService.searchProducts({});
       console.log(
         `[${new Date().toISOString()}] Retrieved ${
@@ -14,19 +14,19 @@ class ChatService {
         } products from DynamoDB.`,
       );
 
-      // Create a context with all product information
+      //* Create a context with all product information
       const productContext = this.createProductContext(products);
 
-      // Debug log the product context
+      //* Debug log the product context
       console.log(
         `[${new Date().toISOString()}] Product context:`,
         productContext
       );
 
-      // Create a prompt that includes the product information and the user's query
+      //* Create a prompt that includes the product information and the user's query
       const prompt = this.createPrompt(message, productContext);
 
-      // Call Ollama with the prompt
+      //* Call Ollama with the prompt
       const response = await this.callOllama(prompt);
       return response;
     } catch (error) {
@@ -36,7 +36,7 @@ class ChatService {
   }
 
   createProductContext(products) {
-    // Group products by category
+    //* Group products by category
     const productsByCategory = products.reduce((acc, product) => {
       if (!acc[product.category]) {
         acc[product.category] = [];
@@ -47,14 +47,14 @@ class ChatService {
 
     let context = "=== INVENTORY DATA ===\n\n";
 
-    // For each category, list products in a clear, structured format
+    //* For each category, list products in a clear, structured format
     for (const [category, categoryProducts] of Object.entries(
       productsByCategory
     )) {
       context += `CATEGORY: ${category}\n`;
       context += "----------------------------------------\n";
 
-      // Group by product name within category
+      //* Group by product name within category
       const productsByName = categoryProducts.reduce((acc, product) => {
         if (!acc[product.name]) {
           acc[product.name] = [];
@@ -112,14 +112,14 @@ Example for Compact Fold:
   async callOllama(prompt) {
     try {
       const apiUrl = "http://localhost:11434/api/generate";
-      const modelName = process.env.MODEL_NAME || "llama2";
+      const modelName = process.env.MODEL_NAME || "neural-chat";
 
       console.log(
         `[${new Date().toISOString()}] Sending request to Ollama ${modelName} at:`,
         apiUrl
       );
 
-      // Start timer for request duration
+      //* Start timer for request duration
       const startTime = Date.now();
       const timerInterval = setInterval(() => {
         const duration = Math.floor((Date.now() - startTime) / 1000);
@@ -149,18 +149,18 @@ Example for Compact Fold:
         }
       );
 
-      // Clear the timer interval after response
+      //* Clear the timer interval after response
       clearInterval(timerInterval);
-      process.stdout.write("\n"); // Add newline after the timer
+      process.stdout.write("\n");
 
-      // Enhanced debug logging
+      //* Enhanced debug logging
       console.log(`[${new Date().toISOString()}] Ollama response:`, {
         model: response.data.model,
         fullResponse: response.data,
         responseKeys: Object.keys(response.data),
       });
 
-      // Clean up the response
+      //* Clean up the response
       let cleanedResponse = response.data.response;
       cleanedResponse = cleanedResponse.replace(/^(Employee:|You:)\s*/i, "");
       cleanedResponse = cleanedResponse.trim();
